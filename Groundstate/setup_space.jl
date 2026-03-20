@@ -35,13 +35,27 @@ function setup_space(Params)
     dz = z[2]-z[1]
 
     # Fourier grids
-    kx = fftshift(2*pi*fftfreq(Nx, dx))
-    ky = fftshift(2*pi*fftfreq(Ny, dy))
-    kz = fftshift(2*pi*fftfreq(Nz, dz))
+    Kmax = pi*Params.Nx/Params.Lx
+    kx = range(-Kmax, Kmax, length = Nx+1)
+    kx = kx[1:end-1]; dkx = kx[2]-kx[1];
+    kx = fftshift(kx);
 
-    dkx = kx[2]-kx[1]
-    dky = ky[2]-ky[1]
-    dkz = kz[2]-kz[1]
+    Kmax = pi*Params.Ny/Params.Ly
+    ky = range(-Kmax, Kmax, length = Ny+1)
+    ky = ky[1:end-1]; dky = ky[2]-ky[1];
+    ky = fftshift(ky);
+
+    Kmax = pi*Params.Nz/Params.Lz
+    kz = range(-Kmax, Kmax, length = Nz+1)
+    kz = kz[1:end-1]; dkz = kz[2]-kz[1];
+    kz = fftshift(kz);
+    # kx = fftshift(fftfreq(Nx, dx))
+    # ky = fftshift(fftfreq(Ny, dy))
+    # kz = fftshift(fftfreq(Nz, dz))
+
+    # dkx = kx[2]-kx[1]
+    # dky = ky[2]-ky[1]
+    # dkz = kz[2]-kz[1]
 
     # Meshgrids
     X = reshape(x, Nx, 1, 1) .* ones(1, Ny, Nz)

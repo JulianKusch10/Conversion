@@ -108,7 +108,7 @@ function parameters()
     wx = 2*pi*39
     wy = 2*pi*20
     wz = 2*pi*97
-    dt = 0.005
+    dt = 0.001
     mindt = 2e-8
 
     # Variable parameters

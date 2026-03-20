@@ -1,7 +1,10 @@
 include("parameters.jl")
 include("setup_space.jl")
 include("initialize.jl")
+include("ssfm_imag.jl")
 using HDF5 
+println("---------")
+println("Starting")
 
 Params = parameters();          # create mutable parameters
 Transf = setup_space(Params);   # create grids
@@ -15,3 +18,10 @@ h5open("./compdata/initialize_julia.h5", "w") do file
     write(file, "dy", Transf.dy)
     write(file, "dz", Transf.dz)
 end
+
+t_idx = 1
+ssfm_imag(psi, Params, Transf, VDk, V, t_idx)
+
+
+println("Finished")
+println("---------")

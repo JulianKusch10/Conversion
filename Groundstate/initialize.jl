@@ -89,16 +89,17 @@ function Initialize(Params, Transf)
              Transf.KZ .* cos(Params.theta)) ./ 
             sqrt.(Transf.KX.^2 .+ Transf.KY.^2 .+ Transf.KZ.^2)
         )
+        normK = sqrt.(Transf.KX.^2 .+ Transf.KY.^2 .+ Transf.KZ.^2)
+        arg = zeros(size(normK))
+        mask = normK .> 0
+        arg[mask] .= (Transf.KX[mask] .* sin(Params.theta) * cos(Params.phi) .+ 
+              Transf.KY[mask] .* sin(Params.theta) * sin(Params.phi) .+ 
+              Transf.KZ[mask] .* cos(Params.theta)) ./ normK[mask]
+
+        alph = acos.(arg)
         alph[1] = π/2
         VDk = cos.(alph).^2 .- 1/3
         VDk[1,1,1] = 0
-
-        Xcutoff, Ycutoff, Zcutoff = Params.Lx/2, Params.Ly/2, Params.Lz/2
-        VDr = fftshift(fft(VDk))
-        VDr[abs.(Transf.X) .> Xcutoff] .= 0
-        VDr[abs.(Transf.Y) .> Ycutoff] .= 0
-        VDr[abs.(Transf.Z) .> Zcutoff] .= 0
-        VDk = ifft(ifftshift(VDr))
         VDk .*= 3
 
     else

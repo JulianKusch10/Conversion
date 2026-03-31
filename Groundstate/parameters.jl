@@ -114,7 +114,7 @@ function parameters()
     # Variable parameters
     as_a0 = 100
     as = as_a0*a0
-    T = 0
+    T = 100
     theta_deg = 0
     theta = deg2rad(theta_deg)
     N = 200000

@@ -2,9 +2,15 @@ include("parameters.jl")
 include("setup_space.jl")
 include("initialize.jl")
 include("ssfm_imag.jl")
+include("HTherm.jl")
+include("EthermInterp.jl")
+include("energytotal.jl")
+include("norm_resid.jl")
+include("runningplot.jl")
 using HDF5 
 println("---------")
 println("Starting")
+
 
 Params = parameters();          # create mutable parameters
 Transf = setup_space(Params);   # create grids
@@ -20,6 +26,7 @@ h5open("./compdata/initialize_julia.h5", "w") do file
 end
 
 t_idx = 1
+
 ssfm_imag(psi, Params, Transf, VDk, V, t_idx)
 
 

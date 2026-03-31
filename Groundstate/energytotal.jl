@@ -1,14 +1,13 @@
-function chemicalpotential(psi, Params, Transf, VDk, V, HT)
+function energytotal(psi, Params, Transf, VDk, V, Ftherm)
 
     # Parameters
-    normfac = Params.Lx * Params.Ly * Params.Lz / length(psi)
     KEop = 0.5 .* (Transf.KX.^2 .+ Transf.KY.^2 .+ Transf.KZ.^2)
 
-    # DDI
+    # Dipole-dipole interactions
     frho = fft(abs.(psi).^2)
     Phi = ifft(frho .* VDk)
 
-    Eddi = Params.gdd .* Phi .* abs.(psi).^2
+    Eddi = 0.5 * Params.gdd .* Phi .* abs.(psi).^2
     Eddi = sum(Eddi) * Transf.dx * Transf.dy * Transf.dz
 
     # Kinetic energy
@@ -20,19 +19,18 @@ function chemicalpotential(psi, Params, Transf, VDk, V, HT)
     Epot = sum(Epot) * Transf.dx * Transf.dy * Transf.dz
 
     # Contact interactions
-    Eint = Params.gs .* abs.(psi).^4
+    Eint = 0.5 * Params.gs .* abs.(psi).^4
     Eint = sum(Eint) * Transf.dx * Transf.dy * Transf.dz
 
     # Quantum fluctuations
-    Eqf = Params.gammaQF .* abs.(psi).^5
+    Eqf = 0.4 * Params.gammaQF .* abs.(psi).^5
     Eqf = sum(Eqf) * Transf.dx * Transf.dy * Transf.dz
 
     # Thermal energy
-    Eth = HT .* abs.(psi).^2
-    Eth = sum(Eth) * Transf.dx * Transf.dy * Transf.dz
+    n = abs.(psi).^2
+    Fth = Ftherm.(n)
+    Eth = sum(Fth) * Transf.dx * Transf.dy * Transf.dz
 
-    # Chemical potential
-    muchem = real(Ekin + Epot + Eint + Eddi + Eqf + Eth) / Params.N
+    return real(Ekin + Epot + Eint + Eddi + Eqf + Eth)
 
-    return muchem
 end

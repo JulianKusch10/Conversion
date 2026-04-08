@@ -1,0 +1,1 @@
+Params_loaded = load_h5_struct('./compdata/groundstate.h5', '/Params');

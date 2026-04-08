@@ -49,13 +49,6 @@ function setup_space(Params)
     kz = range(-Kmax, Kmax, length = Nz+1)
     kz = kz[1:end-1]; dkz = kz[2]-kz[1];
     kz = fftshift(kz);
-    # kx = fftshift(fftfreq(Nx, dx))
-    # ky = fftshift(fftfreq(Ny, dy))
-    # kz = fftshift(fftfreq(Nz, dz))
-
-    # dkx = kx[2]-kx[1]
-    # dky = ky[2]-ky[1]
-    # dkz = kz[2]-kz[1]
 
     # Meshgrids
     X = reshape(x, Nx, 1, 1) .* ones(1, Ny, Nz)

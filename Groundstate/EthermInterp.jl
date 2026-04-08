@@ -1,6 +1,7 @@
 using Interpolations
 using NumericalIntegration
 using Dierckx
+using HDF5
 
 function EthermInterp(Params, psi)
 

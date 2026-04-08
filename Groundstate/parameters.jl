@@ -1,145 +1,138 @@
-# parameters.jl
+############### parameters.jl ################
+Base.@kwdef mutable struct ParamsType
 
-# Define a mutable struct for parameters
-mutable struct params
+    # --------------------------
     # Simulation flags
-    Etol::Float64
-    rtol::Float64
-    phi::Float64
-    cut_off::Float64
+    # --------------------------
+    Etol::Float64 = 5e-10
+    rtol::Float64 = 1e-6
+    phi::Float64 = 0.0
+    cut_off::Float64 = 3e7
 
+    # --------------------------
     # Physical constants
-    hbar::Float64
-    kbol::Float64
-    mu0::Float64
-    muB::Float64
-    a0::Float64
-    m0::Float64
-    w0::Float64
-    mu0factor::Float64
+    # --------------------------
+    hbar::Float64 = 1.0545718e-34
+    kbol::Float64 = 1.38064852e-23
+    mu0::Float64 = 1.25663706212e-6
+    muB::Float64 = 9.274009994e-24
+    a0::Float64 = 5.2917721067e-11
+    m0::Float64 = 1.660539066e-27
+    w0::Float64 = 2π*61.63158647
+    mu0factor::Float64 = 0.3049584233607396
 
+    # --------------------------
     # System parameters
-    m::Float64
-    mu::Float64
-    l0::Float64
+    # --------------------------
+    m::Float64 = 164*m0
+    mu::Float64 = 9.93*muB
+    l0::Float64 = sqrt(hbar/(m*w0))
 
-    # Project info
-    name::String
-    save_plots::Bool
-    save_params::Bool
-    save_intermediate_plots::Bool
-    save_intermediate_data::Bool
-    description::String
+    # --------------------------
+    # Project settings
+    # --------------------------
+    save_plots::Bool = true
+    save_params::Bool = false
+    save_intermediate_plots::Bool = true
+    save_intermediate_data::Bool = true
+    stop_relres_flag::Bool = false
+    stop_relres::Float64 = 10^(-4.5)
 
+    # --------------------------
     # Grid / simulation
-    Nx::Int
-    Ny::Int
-    Nz::Int
-    Lx::Float64
-    Ly::Float64
-    Lz::Float64
-    wx::Float64
-    wy::Float64
-    wz::Float64
-    dt::Float64
-    mindt::Float64
+    # --------------------------
+    Nx::Int = 16
+    Ny::Int = 16
+    Nz::Int = 16
 
+    Lx::Float64 = 48
+    Ly::Float64 = 48
+    Lz::Float64 = 24
+
+    wx::Float64 = 2π*39
+    wy::Float64 = 2π*20
+    wz::Float64 = 2π*97
+
+    dt::Float64 = 0.001
+    mindt::Float64 = 2e-8
+
+    # --------------------------
     # Variable parameters
-    as_a0::Float64
-    as::Float64
-    T::Float64
-    theta_deg::Float64
-    theta::Float64
-    N::Float64
+    # --------------------------
+    as_a0::Float64 = 97
+    as::Float64 = as_a0*a0
+    T::Float64 = 60
+    theta_deg::Float64 = 10
+    theta::Float64 = deg2rad(theta_deg)
+    N::Float64 = 200000
 
+    # --------------------------
     # Derived quantities
-    gs::Float64
-    add::Float64
-    eps_dd::Float64
-    Q5::Float64
-    gammaQF::Float64
-    gdd::Float64
-    ellx::Float64
-    elly::Float64
-    ellz::Float64
-    gx::Float64
-    gy::Float64
-    gz::Float64
+    # --------------------------
+    gs::Float64 = NaN
+    add::Float64 = NaN
+    eps_dd::Float64 = NaN
+    Q5::Float64 = NaN
+    gammaQF::Float64 = NaN
+    gdd::Float64 = NaN
+
+    ellx::Float64 = NaN
+    elly::Float64 = NaN
+    ellz::Float64 = NaN
+
+    gx::Float64 = NaN
+    gy::Float64 = NaN
+    gz::Float64 = NaN
+
+    fx::Float64 = NaN
+    fy::Float64 = NaN
+    fz::Float64 = NaN
+
 end
 
-# Factory function to create a Params object
+
+# ============================================================
+# Function to update derived quantities
+# ============================================================
+
+function update_params!(Params::ParamsType)
+
+    # variable conversions
+    Params.as = Params.as_a0 * Params.a0
+    Params.theta = deg2rad(Params.theta_deg)
+
+    # derived physics
+    Params.gs = 4π*Params.as/Params.l0
+    Params.add = Params.mu0*Params.mu^2*Params.m/(12π*Params.hbar^2)
+    Params.eps_dd = Params.add/Params.as
+    Params.Q5 = 1 + 3/2*Params.eps_dd^2
+    Params.gammaQF = 128/3*sqrt(π*(Params.as/Params.l0)^5)*Params.Q5
+    Params.gdd = 4π*Params.add/Params.l0
+
+    # oscillator lengths
+    Params.ellx = sqrt(Params.hbar/(Params.m*Params.wx))
+    Params.elly = sqrt(Params.hbar/(Params.m*Params.wy))
+    Params.ellz = sqrt(Params.hbar/(Params.m*Params.wz))
+
+    # trap strengths
+    Params.gx = (Params.wx/Params.w0)^2
+    Params.gy = (Params.wy/Params.w0)^2
+    Params.gz = (Params.wz/Params.w0)^2
+
+    # Conversion to frequency
+    Params.fx = Params.wx/(2*pi)
+    Params.fy = Params.wy/(2*pi)
+    Params.fz = Params.wz/(2*pi)
+
+end
+
+
+# ============================================================
+# Factory function returning Params object
+# ============================================================
+
 function parameters()
-    # Flags
-    Etol = 5e-10
-    rtol = 1e-6
-    phi = 0.0
-    cut_off = 3e7
-
-    # Constants
-    hbar = 1.0545718e-34
-    kbol = 1.38064852e-23
-    mu0  = 1.25663706212e-6
-    muB  = 9.274009994e-24
-    a0   = 5.2917721067e-11
-    m0   = 1.660539066e-27
-    w0   = 2*pi*61.63158647
-    mu0factor = 0.3049584233607396
-
-    # System
-    m = 164*m0
-    mu = 9.93*muB
-    l0 = sqrt(hbar/(m*w0))
-
-    # Project
-    name = ""
-    save_plots = true
-    save_params = false
-    save_intermediate_plots = true
-    save_intermediate_data = true
-    description = "Quenching locally."
-
-    # Grid
-    Nx = 16
-    Ny = 16
-    Nz = 16
-    Lx = 48
-    Ly = 48
-    Lz = 24
-    wx = 2*pi*39
-    wy = 2*pi*20
-    wz = 2*pi*97
-    dt = 0.001
-    mindt = 2e-8
-
-    # Variable parameters
-    as_a0 = 100
-    as = as_a0*a0
-    T = 100
-    theta_deg = 0
-    theta = deg2rad(theta_deg)
-    N = 200000
-
-    # Derived quantities
-    gs = 4*pi*as/l0
-    add = mu0*mu^2*m/(12*pi*hbar^2)
-    eps_dd = add/as
-    Q5 = 1 + 3/2*eps_dd^2
-    gammaQF = 128/3*sqrt(pi*(as/l0)^5)*Q5
-    gdd = 4*pi*add/l0
-    ellx = sqrt(hbar/(m*wx))
-    elly = sqrt(hbar/(m*wy))
-    ellz = sqrt(hbar/(m*wz))
-    gx = (wx/w0)^2
-    gy = (wy/w0)^2
-    gz = (wz/w0)^2
-
-    return params(
-        Etol, rtol, phi, cut_off,
-        hbar, kbol, mu0, muB, a0, m0, w0, mu0factor,
-        m, mu, l0,
-        name, save_plots, save_params, save_intermediate_plots, save_intermediate_data, description,
-        Nx, Ny, Nz, Lx, Ly, Lz, wx, wy, wz, dt, mindt,
-        as_a0, as, T, theta_deg, theta, N,
-        gs, add, eps_dd, Q5, gammaQF, gdd, ellx, elly, ellz, gx, gy, gz
-    )
+    Params = ParamsType()
+    update_params!(Params)
+    return Params
 end

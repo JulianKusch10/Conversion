@@ -7,7 +7,12 @@ include("EthermInterp.jl")
 include("energytotal.jl")
 include("norm_resid.jl")
 include("runningplot.jl")
+include("observables.jl")
+include("chemicalpotential.jl")
+include("save_h5.jl")
+include("print_structures.jl")
 using HDF5 
+t_start = time()
 println("---------")
 println("Starting")
 
@@ -15,6 +20,7 @@ println("Starting")
 Params = parameters();          # create mutable parameters
 Transf = setup_space(Params);   # create grids
 psi, V, VDk = Initialize(Params, Transf);
+Observ = observs()
 
 h5open("./compdata/initialize_julia.h5", "w") do file
     write(file, "psi", psi)
@@ -27,8 +33,10 @@ end
 
 t_idx = 1
 
-ssfm_imag(psi, Params, Transf, VDk, V, t_idx)
+ssfm_imag(psi, Params, Transf, VDk, V, t_idx, Observ)
 
 
 println("Finished")
 println("---------")
+t_elapsed = time() - t_start
+println("Elapsed time: ", t_elapsed, " seconds")

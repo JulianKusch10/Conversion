@@ -6,7 +6,7 @@ function ssfm_imag(psi, Params, Transf, VDk, V, t_idx, Observ)
     KEop = 0.5 .* (Transf.KX.^2 .+ Transf.KY.^2 .+ Transf.KZ.^2)
     res_idx = 1
     
-    save_index = 1
+    save_index = 1000
     AdaptIdx = 0
 
     # Thermal energy 
@@ -28,8 +28,11 @@ function ssfm_imag(psi, Params, Transf, VDk, V, t_idx, Observ)
     #Start plotting
     runningplot(psi, Params, Transf, Observ, save_index)
     # display(gcf())
+    h5open("./compdata/HTherm_julia.h5", "w") do file
+            write(file, "HT", HT)
+    end
 
-    while t_idx < 5 #Params.cut_off
+    while t_idx < 10 #Params.cut_off
 
         # Kinetic half-step
         psi = fft(psi)
@@ -56,6 +59,11 @@ function ssfm_imag(psi, Params, Transf, VDk, V, t_idx, Observ)
         psi = sqrt(Params.N) .* psi ./ sqrt(Norm)
         # psi = real(psi)
         muchem = chemicalpotential(psi, Params, Transf, VDk, V, HT)
+        E = energytotal(psi, Params, Transf, VDk, V, Ftherm)
+        E = E / Norm
+        println(muchem)
+        println(E)
+        println("---------")
 
         # Plotting/Observables loop
         if mod(t_idx, save_index) == 0

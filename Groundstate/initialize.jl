@@ -83,24 +83,49 @@ function Initialize(Params, Transf)
 
     elseif CutoffType == 6
         # Rectangular
-        alph = acos.(
-            (Transf.KX .* sin(Params.theta) * cos(Params.phi) .+ 
-             Transf.KY .* sin(Params.theta) * sin(Params.phi) .+ 
-             Transf.KZ .* cos(Params.theta)) ./ 
-            sqrt.(Transf.KX.^2 .+ Transf.KY.^2 .+ Transf.KZ.^2)
-        )
-        normK = sqrt.(Transf.KX.^2 .+ Transf.KY.^2 .+ Transf.KZ.^2)
-        arg = zeros(size(normK))
-        mask = normK .> 0
-        arg[mask] .= (Transf.KX[mask] .* sin(Params.theta) * cos(Params.phi) .+ 
-              Transf.KY[mask] .* sin(Params.theta) * sin(Params.phi) .+ 
-              Transf.KZ[mask] .* cos(Params.theta)) ./ normK[mask]
+        # alph = acos.(
+        #     (Transf.KX .* sin(Params.theta) * cos(Params.phi) .+ 
+        #      Transf.KY .* sin(Params.theta) * sin(Params.phi) .+ 
+        #      Transf.KZ .* cos(Params.theta)) ./ 
+        #     sqrt.(Transf.KX.^2 .+ Transf.KY.^2 .+ Transf.KZ.^2)
+        # )
+        # normK = sqrt.(Transf.KX.^2 .+ Transf.KY.^2 .+ Transf.KZ.^2)
+        # arg = zeros(size(normK))
+        # mask = normK .> 0
+        # arg[mask] .= (Transf.KX[mask] .* sin(Params.theta) * cos(Params.phi) .+ 
+        #       Transf.KY[mask] .* sin(Params.theta) * sin(Params.phi) .+ 
+        #       Transf.KZ[mask] .* cos(Params.theta)) ./ normK[mask]
 
-        alph = acos.(arg)
-        alph[1] = π/2
-        VDk = cos.(alph).^2 .- 1/3
+        # alph = acos.(arg)
+        # alph[1] = π/2
+        # VDk = cos.(alph).^2 .- 1/3
+        # VDk[1,1,1] = 0
+        ex = sin(Params.theta) * cos(Params.phi)
+        ey = sin(Params.theta) * sin(Params.phi)
+        ez = cos(Params.theta)
+
+        kx = Transf.KX
+        ky = Transf.KY
+        kz = Transf.KZ
+
+        k2 = kx.^2 .+ ky.^2 .+ kz.^2
+        kdot = kx .* ex .+ ky .* ey .+ kz .* ez
+
+        VDk = zeros(size(k2))
+
+        mask = k2 .> 0
+        VDk[mask] .= (kdot[mask].^2 ./ k2[mask]) .- 1/3
+
         VDk[1,1,1] = 0
-        VDk .*= 3
+
+        Xcutoff, Ycutoff, Zcutoff = Params.Lx/2, Params.Ly/2, Params.Lz/2
+        VDr = fftshift(fft(VDk))           # MATLAB-style fftn
+        VDr[abs.(Transf.X) .> Xcutoff] .= 0
+        VDr[abs.(Transf.Y) .> Ycutoff] .= 0
+        VDr[abs.(Transf.Z) .> Zcutoff] .= 0
+
+        VDk = real.(ifft(ifftshift(VDr)))  # MATLAB-style ifftn
+        VDk .*= 3                           # match MATLAB final scaling
 
     else
         println("Choose a valid DDI!")

@@ -41,9 +41,9 @@ Base.@kwdef mutable struct ParamsType
     # --------------------------
     # Grid / simulation
     # --------------------------
-    Nx::Int = 16
-    Ny::Int = 16
-    Nz::Int = 16
+    Nx::Int = 256
+    Ny::Int = 256
+    Nz::Int = 64
 
     Lx::Float64 = 48
     Ly::Float64 = 48
@@ -59,10 +59,10 @@ Base.@kwdef mutable struct ParamsType
     # --------------------------
     # Variable parameters
     # --------------------------
-    as_a0::Float64 = 97
+    as_a0::Float64 = 94
     as::Float64 = as_a0*a0
     T::Float64 = 60
-    theta_deg::Float64 = 10
+    theta_deg::Float64 = 45
     theta::Float64 = deg2rad(theta_deg)
     N::Float64 = 200000
 
